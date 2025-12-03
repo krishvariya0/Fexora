@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
     <>
-     
+   
     </>
-  )
+  );
 }
 
-export default App
+export default App;
