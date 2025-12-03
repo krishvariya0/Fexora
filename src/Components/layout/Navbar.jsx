@@ -9,37 +9,32 @@ const Navbar = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-        });
-
-        return unsubscribe;
+        const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+        return unsub;
     }, []);
 
     const handleProfileClick = () => {
         if (user) {
-            navigate("/ProfilePage");
+            navigate("/profile");
         } else {
-            navigate("/Login", { state: { from: "/ProfilePage" } });
+            navigate("/login", { state: { from: "/profile" } });
         }
     };
 
     const getInitial = () => {
         if (!user) return null;
 
-        if (user.displayName) {
+        if (user.displayName)
             return user.displayName.charAt(0).toUpperCase();
-        }
 
-        if (user.email) {
+        if (user.email)
             return user.email.charAt(0).toUpperCase();
-        }
 
         return "U";
     };
 
     return (
-        <nav className="bg-neutral-primary fixed w-full z-20 top-0 left-0 border-b border-default backdrop-blur-lg">
+        <nav className="bg-white fixed w-full z-20 top-0 left-0 border-b border-default backdrop-blur-lg">
             <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
 
                 {/* Brand */}
@@ -49,6 +44,7 @@ const Navbar = () => {
 
                 {/* Menu */}
                 <div className="hidden md:flex items-center space-x-8">
+
                     <Link to="/" className="text-fg-brand font-medium hover:text-brand transition">
                         Home
                     </Link>
@@ -57,15 +53,15 @@ const Navbar = () => {
                         Create Blog
                     </Link>
 
-                    <Link to="#" className="text-heading font-medium hover:text-fg-brand transition">
+                    <Link to="/service" className="text-heading font-medium hover:text-fg-brand transition">
                         Services
                     </Link>
 
-                    <Link to="#" className="text-heading font-medium hover:text-fg-brand transition">
+                    <Link to="/contact" className="text-heading font-medium hover:text-fg-brand transition">
                         Contact
                     </Link>
 
-                    {/* Profile Button */}
+                    {/* Profile */}
                     <button
                         onClick={handleProfileClick}
                         className="ml-4"

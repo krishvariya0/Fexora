@@ -41,7 +41,7 @@ const PasswordReset = () => {
         </h1>
 
         <p className="text-center text-gray-600 text-sm mb-6">
-          Your new password must be at least 6 characters long.
+          Your new password must be at least 8 characters long.
         </p>
 
         {/* FORM */}
@@ -57,8 +57,8 @@ const PasswordReset = () => {
               {...register("password", {
                 required: "Password is required",
                 minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
+                  value: 8,
+                  message: "Password must be at least 8 characters",
                 },
               })}
             />

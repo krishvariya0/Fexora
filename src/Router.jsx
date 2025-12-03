@@ -1,18 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
 
-// Layout
-
-// Auth Page
-import UserAuth from "./Components/Auth/UserAuth";
-
-// Pages
 import ForgetPassword from "./Components/Auth/ForgetPassword";
 import Login from "./Components/Auth/Login";
 import PasswordReset from "./Components/Auth/PasswordReset";
 import SignUp from "./Components/Auth/SignUp";
-import HomePage from "./Components/layout/HomePage";
+import UserAuth from "./Components/Auth/UserAuth";
+
 import MainLayout from "./Components/layout/layout";
 import ProfilePage from "./Components/layout/ProfilePage";
+
+import BlogDetails from "./pages/BlogDetail";
+import Contact from "./pages/Contact";
+import CreateBlog from "./pages/CreateBlog";
+import HomePage from "./pages/HomePage";
+import Service from "./pages/Service";
 
 const router = createBrowserRouter([
   {
@@ -23,38 +24,56 @@ const router = createBrowserRouter([
         index: true,
         element: <HomePage />,
       },
+
       {
-        path: "/ProfilePage",
+        path: "profile",
         element: <ProfilePage />,
       },
 
+      {
+        path: "create-blog",
+        element: <CreateBlog />,
+      },
 
+      {
+        path: "service",
+        element: <Service />,
+      },
+
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+
+      // Blog details page
+      {
+        path: "blog/:id",
+        element: <BlogDetails />,
+      },
     ],
   },
 
+  // AUTH ROUTES
   {
-    path: "/auth",
+    path: "auth",
     element: <UserAuth />,
   },
   {
-    path: "/SignUp",
+    path: "signup",
     element: <SignUp />,
   },
   {
-    path: "/Login",
+    path: "login",
     element: <Login />,
   },
   {
-    path: "/ForgetPassword",
+    path: "ForgetPassword",
     element: <ForgetPassword />,
   },
   {
-    path: "/PasswordReset",
+    path: "PasswordReset",
     element: <PasswordReset />,
   },
-
-
-
 
   // 404
   {
