@@ -8,17 +8,19 @@ import router from "./router.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <>
+      <RouterProvider router={router} />
 
-    <ToastContainer
-      position="top-right"
-      autoClose={5000}
-      closeButton={false}
-      hideProgressBar={false}
-      newestOnTop={true}
-      pauseOnHover={true}
-      draggable={true}
-      style={{ zIndex: 999999 }}
-    />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        closeButton={false}
+        hideProgressBar={false}
+        newestOnTop={true}
+        pauseOnHover={true}
+        draggable={true}
+        style={{ zIndex: 999999 }}
+      />
+    </>
   </StrictMode>
 );
