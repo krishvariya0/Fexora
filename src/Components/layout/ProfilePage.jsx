@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { IoCreateOutline, IoLogOutOutline } from "react-icons/io5";
+// Added IoPerson, IoMail, IoCalendar for better visual details in the design
+import {
+    IoCalendarOutline,
+    IoCreateOutline,
+    IoLogOutOutline,
+    IoMailOutline,
+    IoPersonOutline
+} from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { logoutUser } from "../../utils/auth";
@@ -38,8 +45,8 @@ const ProfilePage = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading profile...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-gray-500 font-medium">Loading profile...</p>
                 </div>
             </div>
         );
@@ -57,52 +64,98 @@ const ProfilePage = () => {
     };
 
     return (
-        <div className="min-h-screen flex justify-center px-4 py-20 ">
-            <div className="w-full max-w-2xl bg-white border border-gray-300 rounded-xl shadow-md p-8">
-                {/* Title */}
-                <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">
-                    Your Profile
-                </h1>
+        <div className="min-h-screen  flex justify-center items-center px-4 py-10">
+            {/* Main Card */}
+            <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
 
-                {/* Avatar */}
-                <div className="flex justify-center mb-6">
-                    <div className="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center text-4xl font-bold text-indigo-600">
-                        {getInitial()}
+                {/* Decorative Header / Cover */}
+                <div className="h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
+                    <div className="absolute inset-0 bg-black/10"></div>
+                </div>
+
+                {/* Content Container */}
+                <div className="px-8 pb-8 relative">
+
+                    {/* Avatar (Overlapping the header) */}
+                    <div className="relative -mt-16 mb-6 flex justify-center">
+                        <div className="h-32 w-32 rounded-full border-4 border-white bg-indigo-50 shadow-lg flex items-center justify-center text-5xl font-bold text-indigo-600">
+                            {getInitial()}
+                        </div>
                     </div>
-                </div>
 
-                {/* User Details */}
-                <div className="space-y-4 text-center mb-8">
-                    {user.displayName && (
-                        <p className="text-xl font-semibold text-gray-800">
-                            {user.displayName}
-                        </p>
-                    )}
-                    {user.email && (
-                        <p className="text-gray-600">{user.email}</p>
-                    )}
-                    <p className="text-sm text-gray-500">
-                        Member since {new Date(user.metadata.creationTime).toLocaleDateString()}
-                    </p>
-                </div>
+                    {/* Header Text */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                            {user.displayName || "User Profile"}
+                        </h1>
+                        <p className="text-sm text-gray-500 font-medium">Welcome back!</p>
+                    </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                    <button
-                        onClick={() => navigate("/edit-profile")}
-                        className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 rounded-md transition"
-                    >
-                        <IoCreateOutline size={20} />
-                        Edit Profile
-                    </button>
+                    {/* User Details Section */}
+                    <div className="bg-gray-50 rounded-2xl p-5 space-y-4 mb-8 border border-gray-100">
 
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-medium py-3 rounded-md transition"
-                    >
-                        <IoLogOutOutline size={20} />
-                        Logout
-                    </button>
+                        {/* Name Field */}
+                        {user.displayName && (
+                            <div className="flex items-center gap-3 text-gray-700">
+                                <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-500">
+                                    <IoPersonOutline size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Full Name</p>
+                                    <p className="font-semibold">{user.displayName}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Email Field */}
+                        {user.email && (
+                            <div className="flex items-center gap-3 text-gray-700">
+                                <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-500">
+                                    <IoMailOutline size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Email Address</p>
+                                    <p className="font-semibold break-all">{user.email}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Date Field */}
+                        <div className="flex items-center gap-3 text-gray-700">
+                            <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-500">
+                                <IoCalendarOutline size={20} />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Joined On</p>
+                                <p className="font-semibold">
+                                    {new Date(user.metadata.creationTime).toLocaleDateString(undefined, {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => navigate("/edit-profile")}
+                            className="w-full group flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                            <IoCreateOutline size={20} className="group-hover:scale-110 transition-transform" />
+                            Edit Profile
+                        </button>
+
+                        <button
+                            onClick={handleLogout}
+                            className="w-full group flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 font-semibold py-3.5 rounded-xl transition-all duration-300"
+                        >
+                            <IoLogOutOutline size={20} className="group-hover:scale-110 transition-transform" />
+                            Log Out
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,487 +1,217 @@
-// HomePage.jsx — Fixed, stable real-time blog manager
-import { onAuthStateChanged } from "firebase/auth";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import BlogDetailModal from "../Components/Blog/BlogDetailModal";
-import { createUserBlog, deleteUserBlog, getUserBlogs, updateUserBlog } from "../utils/db";
-import { auth } from "../utils/firebase";
+// HomePage.jsx — Display all blogs
+import { onAuthStateChanged } from 'firebase/auth';
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { getAllBlogs, getUserByID } from '../utils/db';
+import { auth } from '../utils/firebase';
 
 const HomePage = () => {
   const [blogs, setBlogs] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [imageBase64, setImageBase64] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [fetchLoading, setFetchLoading] = useState(true);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(true);
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const mountedRef = useRef(true);
-  const fileReaderRef = useRef(null);
+  // Function to fetch author details for a blog
+  const fetchAuthorDetails = useCallback(async (blog) => {
+    try {
+      if (blog.userId) {
+        const userData = await getUserByID(blog.userId);
+        if (userData && (userData.displayName || userData.name)) {
+          return userData.displayName || userData.name;
+        }
+      }
+      return blog.authorName || blog.userName || 'User';
+    } catch (error) {
+      console.error(`Error fetching author for blog ${blog.id}:`, error);
+      return blog.authorName || blog.userName || 'User';
+    }
+  }, []);
 
-  // react-hook-form
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors, isSubmitting },
-    setError,
-    clearErrors,
-  } = useForm({
-    mode: "onChange",
-    defaultValues: {
-      title: "",
-      content: "",
-      image: "",
-    },
-  });
+  // Fetch all blogs with author details
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const allBlogs = await getAllBlogs();
+        
+        // Fetch author details for each blog
+        const blogsWithAuthors = await Promise.all(
+          allBlogs.map(async (blog) => {
+            const authorName = await fetchAuthorDetails(blog);
+            return { ...blog, displayAuthorName: authorName };
+          })
+        );
+        
+        // Sort blogs by creation date (newest first)
+        const sortedBlogs = blogsWithAuthors.sort((a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        
+        setBlogs(sortedBlogs);
+      } catch (error) {
+        console.error('Error fetching blogs:', error);
+        toast.error('Failed to load blogs');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // User authentication state management
+    fetchBlogs();
+  }, [fetchAuthorDetails]);
+
+  // Set up auth state listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      setUserLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // --- Real-time listener for user-specific blogs ---
-  useEffect(() => {
-    if (userLoading || !currentUser) {
-      setBlogs([]);
-      setFetchLoading(false);
-      return;
-    }
-
-    mountedRef.current = true;
-    setFetchLoading(true);
-
-    const unsubscribe = getUserBlogs(currentUser.uid, (blogList) => {
-      if (!mountedRef.current) return;
-      setBlogs(blogList);
-      setFetchLoading(false);
-    });
-
-    return () => {
-      mountedRef.current = false;
-      if (unsubscribe) unsubscribe();
-      // cleanup FileReader handlers to avoid leaks
-      if (fileReaderRef.current) {
-        fileReaderRef.current.onload = null;
-        fileReaderRef.current.onerror = null;
-      }
-    };
-  }, [currentUser, userLoading]);
-
-  // IMAGE HANDLER
-  const handleImage = useCallback(
-    (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-
-      // validate type
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file");
-        e.target.value = "";
-        return;
-      }
-
-      // limit size to 5MB
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
-        e.target.value = "";
-        return;
-      }
-
-      setImageUploading(true);
-      const reader = new FileReader();
-      fileReaderRef.current = reader;
-
-      reader.onloadend = () => {
-        try {
-          const result = reader.result;
-          setImageBase64(result);
-          setValue("image", result);
-          clearErrors("image");
-        } catch (err) {
-          console.error("Error processing image:", err);
-          toast.error("Failed to process image");
-        } finally {
-          setImageUploading(false);
-        }
-      };
-
-      reader.onerror = () => {
-        toast.error("Failed to read image file");
-        setImageUploading(false);
-        e.target.value = "";
-      };
-
-      reader.readAsDataURL(file);
-    },
-    [setValue, clearErrors]
-  );
-
-  // CREATE / UPDATE
-  const onSubmit = async (data) => {
-    // Check if user is authenticated
-    if (!currentUser) {
-      toast.error("Please login to create or update blogs");
-      return;
-    }
-
-    // protect against double actions
-    if (loading || isSubmitting) return;
-
-    setLoading(true);
-    clearErrors();
-    let hasError = false;
-
-    // basic validations
-    if (!data.title || !data.title.trim()) {
-      setError("title", { message: "Title is required" });
-      hasError = true;
-    }
-    if (!data.content || !data.content.trim()) {
-      setError("content", { message: "Content is required" });
-      hasError = true;
-    }
-    // require image only when creating
-    if (!editingId && !data.image) {
-      setError("image", { message: "Image is required" });
-      hasError = true;
-    }
-
-    if (hasError) {
-      toast.error("Please fix errors before submitting");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      if (editingId) {
-        // if user didn't change image, data.image will contain existing image (we set it on edit)
-        const existing = blogs.find((b) => b.id === editingId);
-        const updatePayload = {
-          title: data.title.trim(),
-          content: data.content.trim(),
-          image: data.image || existing?.image || "",
-        };
-        await updateUserBlog(currentUser.uid, editingId, updatePayload);
-        toast.success("Blog updated successfully");
-        setEditingId(null);
-      } else {
-        await createUserBlog(currentUser.uid, {
-          title: data.title.trim(),
-          content: data.content.trim(),
-          image: data.image,
-        });
-        toast.success("Blog created successfully");
-      }
-
-      // reset form UI
-      reset();
-      setImageBase64("");
-      // no need to manually fetch — realtime listener updates list
-    } catch (err) {
-      console.error("Save error:", err);
-      const errorMessage =
-        err?.code === "permission-denied"
-          ? "Permission denied. Check Firebase rules."
-          : err?.message || "Failed to save blog";
-      toast.error(errorMessage);
-    } finally {
-      if (mountedRef.current) setLoading(false);
-    }
+  // Format date to a readable format
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // DELETE
-  const handleDelete = async (id) => {
-    if (!currentUser) {
-      toast.error("Please login to delete blogs");
-      return;
-    }
-
-    if (!window.confirm("Are you sure you want to delete this blog?")) return;
-    try {
-      await deleteUserBlog(currentUser.uid, id);
-      toast.success("Blog deleted");
-      // realtime listener will update list
-    } catch (err) {
-      console.error("Delete error:", err);
-      toast.error("Failed to delete blog");
-    }
-  };
-
-  // Truncate text function
+  // Truncate text to a certain length
   const truncateText = (text, maxLength = 150) => {
-    if (!text || text.length <= maxLength) return text || "No content";
-    return text.slice(0, maxLength) + "...";
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   };
 
-  // Modal handlers
-  const openBlogModal = (blog) => {
-    setSelectedBlog(blog);
-    setIsModalOpen(true);
-  };
-
-  const closeBlogModal = () => {
-    setIsModalOpen(false);
-    setSelectedBlog(null);
-  };
-
-  const handleEditFromModal = (blog) => {
-    closeBlogModal();
-    handleEdit(blog);
-  };
-
-  const handleDeleteFromModal = (blogId) => {
-    closeBlogModal();
-    handleDelete(blogId);
-  };
-  const handleEdit = useCallback(
-    (blog) => {
-      try {
-        setEditingId(blog.id);
-        setValue("title", blog.title || "");
-        setValue("content", blog.content || "");
-        setValue("image", blog.image || "");
-        setImageBase64(blog.image || "");
-        clearErrors();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } catch (err) {
-        console.error("Edit error:", err);
-        toast.error("Failed to start edit");
-      }
-    },
-    [setValue, clearErrors]
-  );
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    reset();
-    setImageBase64("");
-    clearErrors();
-    const fileInput = document.getElementById("image-upload");
-    if (fileInput) fileInput.value = "";
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-lg text-gray-600">Loading blogs...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="min-h-screen ">
-        <ToastContainer position="top-right" />
-
-        {/* User authentication status */}
-        {userLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin h-8 w-8 border-b-2 border-blue-500 rounded-full" />
-          </div>
-        ) : !currentUser ? (
-          <div className="flex justify-center py-8">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              Please login to manage your blogs.
+    <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+            Latest Blog Posts
+          </h1>
+          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+            Discover amazing stories, thinking, and expertise from our community
+          </p>
+          {currentUser ? (
+            <div className="mt-6">
+              <Link
+                to="/create-blog"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Write a Blog Post
+              </Link>
             </div>
-          </div>
-        ) : (
-          /* FORM */
-          <div className="w-full flex justify-center py-6 sm:py-12">
-            <div className="bg-white shadow-lg border border-gray-200 rounded-2xl p-4 sm:p-6 lg:p-8 w-full max-w-2xl mx-4">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
-                {editingId ? "Update Blog" : "Create New Blog"}
-              </h1>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 sm:gap-5">
-                {/* Title */}
-                <div>
-                  <label className="text-sm sm:base font-medium text-gray-700">Title</label>
-                  <input
-                    {...register("title")}
-                    placeholder="Blog title"
-                    disabled={loading || isSubmitting}
-                    className="mt-2 w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-sm sm:text-base"
-                  />
-                  {errors.title && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.title.message}</p>}
-                </div>
-
-                {/* Content */}
-                <div>
-                  <label className="text-sm sm:base font-medium text-gray-700">Content</label>
-                  <textarea
-                    {...register("content")}
-                    placeholder="Write your blog..."
-                    rows={6}
-                    disabled={loading || isSubmitting}
-                    className="mt-2 w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 resize-none text-sm sm:text-base"
-                  />
-                  {errors.content && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.content.message}</p>}
-                </div>
-
-                {/* Hidden image field for RHF */}
-                <input type="hidden" {...register("image")} />
-
-                {/* Image upload */}
-                <div>
-                  <label className="text-sm sm:base font-medium text-gray-700">Image</label>
-                  <label
-                    htmlFor="image-upload"
-                    className={`mt-2 block w-full h-40 sm:h-48 lg:h-56 border-2 border-dashed rounded-lg overflow-hidden relative text-center cursor-pointer
-                    ${imageUploading ? "opacity-60" : "hover:bg-gray-100"}`
-                    }
-                  >
-                    {imageUploading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60">
-                        <div className="animate-spin h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-500 rounded-full" />
-                      </div>
-                    )}
-
-                    {imageBase64 && !imageUploading ? (
-                      <img src={imageBase64} alt="preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500 px-4">
-                        <span className="text-xs sm:text-sm">{imageUploading ? "Processing..." : "Click to upload image (max 5MB)"}</span>
-                      </div>
-                    )}
-                  </label>
-
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImage}
-                    disabled={loading || isSubmitting || imageUploading}
-                    className="hidden"
-                  />
-
-                  {errors.image && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.image.message}</p>}
-                </div>
-
-                {/* Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    type="submit"
-                    disabled={loading || isSubmitting || imageUploading}
-                    className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg disabled:opacity-60 text-sm sm:base font-medium"
-                  >
-                    {loading || isSubmitting ? "Processing..." : editingId ? "Update Blog" : "Create Blog"}
-                  </button>
-
-                  {editingId && (
-                    <button
-                      type="button"
-                      onClick={handleCancelEdit}
-                      disabled={loading || isSubmitting}
-                      className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-500 text-white rounded-lg disabled:opacity-60 text-sm sm:base font-medium"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </form>
+          ) : (
+            <div className="mt-6">
+              <Link
+                to="/login"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Sign in to Create a Blog
+              </Link>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* LIST */}
-      <div className="max-w-[1440px] mx-auto p-6">
-        <h2 className="text-2xl font-semibold mb-4 text-center">Blog Posts</h2>
-
-        <div className="mb-4 text-sm text-gray-600">
-          <span>Fetch loading: {fetchLoading ? "Yes" : "No"}</span>
-          <span className="mx-3">|</span>
-          <span>Count: {blogs.length}</span>
+          )}
         </div>
 
-        {fetchLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin h-10 w-10 border-b-2 border-blue-500 rounded-full" />
-          </div>
-        ) : blogs.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            No posts yet — create your first blog above.
+        {blogs.length === 0 ? (
+          <div className="text-center py-12">
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <h3 className="mt-2 text-lg font-medium text-gray-900">No blogs yet</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {currentUser ? (
+                <>
+                  Get started by{' '}
+                  <Link to="/create-blog" className="text-blue-600 hover:text-blue-500">
+                    creating a new blog post
+                  </Link>
+                  .
+                </>
+              ) : (
+                'Sign in to create your first blog post.'
+              )}
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {blogs.map((blog) => (
-              <article key={blog.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform ">
-                <div className="w-full h-48 sm:h-40 lg:h-48 bg-gray-100">
-                  {blog.image ? (
-                    <img src={blog.image} alt={blog.title || "blog image"} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No image
+              <article key={blog.id} className="flex flex-col overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
+                {blog.image && (
+                  <div className="shrink-0 h-48">
+                    <img
+                      className="h-full w-full object-cover"
+                      src={blog.image}
+                      alt={blog.title}
+                    />
+                  </div>
+                )}
+                <div className="flex-1 p-6 flex flex-col justify-between">
+                  <div className="flex-1">
+                    <Link
+                      to={`/blog/${blog.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block hover:opacity-90 transition-opacity"
+                    >
+                      <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
+                        {blog.title}
+                      </h3>
+                      <p className="mt-3 text-base text-gray-500 line-clamp-3">
+                        {truncateText(blog.content)}
+                      </p>
+                    </Link>
+                  </div>
+                  <div className="mt-6 flex items-center">
+                    <div className="shrink-0">
+                      <span className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                        {blog.displayAuthorName?.charAt(0).toUpperCase() || 'U'}
+                      </span>
                     </div>
-                  )}
-                </div>
-
-                <div className="p-3 sm:p-4">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-2 mb-2">{blog.title || "Untitled"}</h3>
-                  <p className="text-sm sm:text-base text-gray-600 mb-3">
-                    {truncateText(blog.content, 150)}
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 sm:mt-4">
-                    <div className="text-xs sm:text-sm text-gray-400">
-                      {blog.createdAt
-                        ? new Date(blog.createdAt).toLocaleDateString()
-                        : "No date"}
-                    </div>
-
-                    <div className="flex gap-2 sm:gap-3">
-                      <button
-                        onClick={() => openBlogModal(blog)}
-                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                      >
-                        More
-                      </button>
-
-                      {currentUser && (
-                        <>
-                          <button
-                            onClick={() => handleEdit(blog)}
-                            className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                            disabled={loading}
-                          >
-                            Edit
-                          </button>
-
-                          <button
-                            onClick={() => handleDelete(blog.id)}
-                            className="text-xs sm:text-sm text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                            disabled={loading}
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-gray-900">
+                        {blog.displayAuthorName || 'User'}
+                      </p>
+                      <div className="flex space-x-1 text-sm text-gray-500">
+                        <time dateTime={blog.createdAt}>
+                          {formatDate(blog.createdAt)}
+                        </time>
+                        <span aria-hidden="true">&middot;</span>
+                        <span>{Math.ceil(blog.content?.length / 200) || 2} min read</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </article>
             ))}
           </div>
-
         )}
       </div>
-
-      {/* Blog Detail Modal */}
-      <BlogDetailModal
-        blog={selectedBlog}
-        isOpen={isModalOpen}
-        onClose={closeBlogModal}
-        currentUser={currentUser}
-        onEdit={handleEditFromModal}
-        onDelete={handleDeleteFromModal}
-      />
-
-    </>
-
+    </div>
   );
 };
 

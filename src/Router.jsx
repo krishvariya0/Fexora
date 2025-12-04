@@ -11,50 +11,52 @@ import UserAuth from "./Components/Auth/UserAuth";
 import MainLayout from "./Components/layout/layout";
 import ProfilePage from "./Components/layout/ProfilePage";
 
-import BlogDetails from "./pages/BlogDetail";
+import BlogDetail from "./pages/BlogDetail";
 import Contact from "./pages/Contact";
+import CreateBlog from "./pages/CreateBlog";
 import HomePage from "./pages/HomePage";
 import Service from "./pages/Service";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <ProtectedRoute>
-        <MainLayout />
-      </ProtectedRoute>
-    ),
+    element: <MainLayout />,
     children: [
       {
         index: true,
         element: <HomePage />,
       },
-
+      {
+        path: "blog/:id",
+        element: <BlogDetail />,
+      },
       {
         path: "profile",
-        element: <ProfilePage />,
+        element: (
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
       },
-
-      // {
-      //   path: "create-blog",
-      //   element: <CreateBlog />,
-      // },
-
+      {
+        path: "create-blog",
+        element: (
+          <ProtectedRoute>
+            <CreateBlog />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "service",
         element: <Service />,
       },
-
       {
         path: "contact",
         element: <Contact />,
       },
 
-      // Blog details page
-      {
-        path: "blog/:id",
-        element: <BlogDetails />,
-      },
+      // Blog details page is already defined above
+      // Keeping only one instance of the blog/:id route
     ],
   },
 
