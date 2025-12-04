@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, limit, query, setDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "./firebase";
 
 export const createUser = async (user) => {
@@ -32,4 +32,45 @@ export const getUserByID = async (uid) => {
     } else {
         return null; // user not found
     }
+};
+
+// Blog functions for user-specific data storage
+export const createUserBlog = async (userId, blogData) => {
+    const blogRef = collection(db, `blogbyuser${userId}`);
+    const newBlog = {
+        ...blogData,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    };
+    return addDoc(blogRef, newBlog);
+};
+
+export const updateUserBlog = async (userId, blogId, blogData) => {
+    const blogRef = doc(db, `blogbyuser${userId}`, blogId);
+    const updateData = {
+        ...blogData,
+        updatedAt: Date.now()
+    };
+    return updateDoc(blogRef, updateData);
+};
+
+export const deleteUserBlog = async (userId, blogId) => {
+    const blogRef = doc(db, `blogbyuser${userId}`, blogId);
+    return deleteDoc(blogRef);
+};
+
+export const getUserBlogs = (userId, callback) => {
+    const blogsRef = collection(db, `blogbyuser${userId}`);
+    const q = query(blogsRef, orderBy("createdAt", "desc"));
+
+    return onSnapshot(q, (snapshot) => {
+        const blogs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        callback(blogs);
+    }, (error) => {
+        console.error("Error fetching user blogs:", error);
+        callback([]);
+    });
 };

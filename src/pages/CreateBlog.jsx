@@ -2,7 +2,7 @@
 const CreateBlog = () => {
     return (
         <div>
-            daf
+
         </div>
     )
 }

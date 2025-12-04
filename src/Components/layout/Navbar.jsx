@@ -49,9 +49,9 @@ const Navbar = () => {
                         Home
                     </Link>
 
-                    <Link to="/create-blog" className="text-heading font-medium hover:text-fg-brand transition">
+                    {/* <Link to="/create-blog" className="text-heading font-medium hover:text-fg-brand transition">
                         Create Blog
-                    </Link>
+                    </Link> */}
 
                     <Link to="/service" className="text-heading font-medium hover:text-fg-brand transition">
                         Services

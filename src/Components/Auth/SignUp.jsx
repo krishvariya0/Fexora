@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
 import { IoIosReturnLeft } from "react-icons/io";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { signUpWithEmailAndPassword, signUpWithGoogle } from "../../utils/auth";
@@ -9,6 +9,10 @@ import { createUser, getUserByID } from "../../utils/db";
 
 const SignUp = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Get the redirect path from location state or default to '/'
+    const from = location.state?.from?.pathname || "/";
     const {
         register,
         handleSubmit,
@@ -43,7 +47,7 @@ const SignUp = () => {
 
 
                 toast.success("Logged in with Google!");
-                setTimeout(() => navigate("/"), 1500);
+                setTimeout(() => navigate(from, { replace: true }), 1500);
             }
         } catch (error) {
             toast.error("Google login failed!");
@@ -76,7 +80,7 @@ const SignUp = () => {
 
                 toast.success("Account created successfully!");
 
-                setTimeout(() => navigate("/"), 2000);
+                setTimeout(() => navigate(from, { replace: true }), 2000);
             }
 
 
