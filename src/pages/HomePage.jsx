@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BlogDetailModal from "../Components/Blog/BlogDetailModal";
 import { createUserBlog, deleteUserBlog, getUserBlogs, updateUserBlog } from "../utils/db";
 import { auth } from "../utils/firebase";
 
@@ -16,6 +17,8 @@ const HomePage = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [selectedBlog, setSelectedBlog] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const mountedRef = useRef(true);
   const fileReaderRef = useRef(null);
@@ -216,7 +219,32 @@ const HomePage = () => {
     }
   };
 
-  // START EDIT
+  // Truncate text function
+  const truncateText = (text, maxLength = 150) => {
+    if (!text || text.length <= maxLength) return text || "No content";
+    return text.slice(0, maxLength) + "...";
+  };
+
+  // Modal handlers
+  const openBlogModal = (blog) => {
+    setSelectedBlog(blog);
+    setIsModalOpen(true);
+  };
+
+  const closeBlogModal = () => {
+    setIsModalOpen(false);
+    setSelectedBlog(null);
+  };
+
+  const handleEditFromModal = (blog) => {
+    closeBlogModal();
+    handleEdit(blog);
+  };
+
+  const handleDeleteFromModal = (blogId) => {
+    closeBlogModal();
+    handleDelete(blogId);
+  };
   const handleEdit = useCallback(
     (blog) => {
       try {
@@ -262,36 +290,36 @@ const HomePage = () => {
           </div>
         ) : (
           /* FORM */
-          <div className="w-full flex justify-center py-12">
-            <div className="bg-white shadow-lg border border-gray-200 rounded-2xl p-8 w-full max-w-2xl">
-              <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">
+          <div className="w-full flex justify-center py-6 sm:py-12">
+            <div className="bg-white shadow-lg border border-gray-200 rounded-2xl p-4 sm:p-6 lg:p-8 w-full max-w-2xl mx-4">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
                 {editingId ? "Update Blog" : "Create New Blog"}
               </h1>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 sm:gap-5">
                 {/* Title */}
                 <div>
-                  <label className="font-medium text-gray-700">Title</label>
+                  <label className="text-sm sm:base font-medium text-gray-700">Title</label>
                   <input
                     {...register("title")}
                     placeholder="Blog title"
                     disabled={loading || isSubmitting}
-                    className="mt-2 w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="mt-2 w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-sm sm:text-base"
                   />
-                  {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+                  {errors.title && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.title.message}</p>}
                 </div>
 
                 {/* Content */}
                 <div>
-                  <label className="font-medium text-gray-700">Content</label>
+                  <label className="text-sm sm:base font-medium text-gray-700">Content</label>
                   <textarea
                     {...register("content")}
                     placeholder="Write your blog..."
                     rows={6}
                     disabled={loading || isSubmitting}
-                    className="mt-2 w-full px-4 py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 resize-none"
+                    className="mt-2 w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 resize-none text-sm sm:text-base"
                   />
-                  {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>}
+                  {errors.content && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.content.message}</p>}
                 </div>
 
                 {/* Hidden image field for RHF */}
@@ -299,24 +327,24 @@ const HomePage = () => {
 
                 {/* Image upload */}
                 <div>
-                  <label className="font-medium text-gray-700">Image</label>
+                  <label className="text-sm sm:base font-medium text-gray-700">Image</label>
                   <label
                     htmlFor="image-upload"
-                    className={`mt-2 block w-full h-56 border-2 border-dashed rounded-lg overflow-hidden relative text-center
-                  ${imageUploading ? "opacity-60" : "hover:bg-gray-100"}`
+                    className={`mt-2 block w-full h-40 sm:h-48 lg:h-56 border-2 border-dashed rounded-lg overflow-hidden relative text-center cursor-pointer
+                    ${imageUploading ? "opacity-60" : "hover:bg-gray-100"}`
                     }
                   >
                     {imageUploading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-60">
-                        <div className="animate-spin h-8 w-8 border-b-2 border-blue-500 rounded-full" />
+                        <div className="animate-spin h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-500 rounded-full" />
                       </div>
                     )}
 
                     {imageBase64 && !imageUploading ? (
                       <img src={imageBase64} alt="preview" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
-                        <span>{imageUploading ? "Processing..." : "Click to upload image (max 5MB)"}</span>
+                      <div className="flex items-center justify-center h-full text-gray-500 px-4">
+                        <span className="text-xs sm:text-sm">{imageUploading ? "Processing..." : "Click to upload image (max 5MB)"}</span>
                       </div>
                     )}
                   </label>
@@ -330,15 +358,15 @@ const HomePage = () => {
                     className="hidden"
                   />
 
-                  {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>}
+                  {errors.image && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.image.message}</p>}
                 </div>
 
                 {/* Buttons */}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="submit"
                     disabled={loading || isSubmitting || imageUploading}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg disabled:opacity-60"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg disabled:opacity-60 text-sm sm:base font-medium"
                   >
                     {loading || isSubmitting ? "Processing..." : editingId ? "Update Blog" : "Create Blog"}
                   </button>
@@ -348,7 +376,7 @@ const HomePage = () => {
                       type="button"
                       onClick={handleCancelEdit}
                       disabled={loading || isSubmitting}
-                      className="px-6 py-3 bg-gray-500 text-white rounded-lg disabled:opacity-60"
+                      className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-500 text-white rounded-lg disabled:opacity-60 text-sm sm:base font-medium"
                     >
                       Cancel
                     </button>
@@ -379,10 +407,10 @@ const HomePage = () => {
             No posts yet — create your first blog above.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {blogs.map((blog) => (
-              <article key={blog.id} className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="w-full h-75 sm:h-40  sm:max-w-[320px] bg-gray-100">
+              <article key={blog.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform ">
+                <div className="w-full h-48 sm:h-40 lg:h-48 bg-gray-100">
                   {blog.image ? (
                     <img src={blog.image} alt={blog.title || "blog image"} className="w-full h-full object-cover" />
                   ) : (
@@ -392,33 +420,46 @@ const HomePage = () => {
                   )}
                 </div>
 
-                <div className="p-4 h-60 ">
-                  <h3 className="text-lg font-semibold text-gray-800">{blog.title || "Untitled"}</h3>
-                  <p className="text-gray-600 mt-2">{blog.content || "No content"}</p>
+                <div className="p-3 sm:p-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-2 mb-2">{blog.title || "Untitled"}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-3">
+                    {truncateText(blog.content, 150)}
+                  </p>
 
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="text-sm text-gray-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 sm:mt-4">
+                    <div className="text-xs sm:text-sm text-gray-400">
                       {blog.createdAt
                         ? new Date(blog.createdAt).toLocaleDateString()
                         : "No date"}
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       <button
-                        onClick={() => handleEdit(blog)}
-                        className="text-blue-600 hover:text-blue-800"
-                        disabled={loading}
+                        onClick={() => openBlogModal(blog)}
+                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                       >
-                        Edit
+                        More
                       </button>
 
-                      <button
-                        onClick={() => handleDelete(blog.id)}
-                        className="text-red-600 hover:text-red-800"
-                        disabled={loading}
-                      >
-                        Delete
-                      </button>
+                      {currentUser && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(blog)}
+                            className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                            disabled={loading}
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(blog.id)}
+                            className="text-xs sm:text-sm text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            disabled={loading}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -428,6 +469,16 @@ const HomePage = () => {
 
         )}
       </div>
+
+      {/* Blog Detail Modal */}
+      <BlogDetailModal
+        blog={selectedBlog}
+        isOpen={isModalOpen}
+        onClose={closeBlogModal}
+        currentUser={currentUser}
+        onEdit={handleEditFromModal}
+        onDelete={handleDeleteFromModal}
+      />
 
     </>
 

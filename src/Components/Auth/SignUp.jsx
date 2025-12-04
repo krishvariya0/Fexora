@@ -10,7 +10,7 @@ import { createUser, getUserByID } from "../../utils/db";
 const SignUp = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Get the redirect path from location state or default to '/'
     const from = location.state?.from?.pathname || "/";
     const {
@@ -98,16 +98,16 @@ const SignUp = () => {
     const password = watch("password");
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-white">
+        <div className="min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 bg-white">
 
-            <div className="w-full max-w-lg bg-white border border-gray-300 rounded-xl shadow-md p-8">
+            <div className="w-full max-w-md sm:max-w-lg bg-white border border-gray-300 rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
 
                 {/* Title */}
-                <h1 className="text-2xl font-bold text-gray-800 text-center mb-8">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-6 sm:mb-8">
                     Create Your Fexora Account
                 </h1>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
 
                     {/* Full Name */}
                     <div className="space-y-1">
@@ -115,11 +115,11 @@ const SignUp = () => {
                         <input
                             type="text"
                             placeholder="Enter your name"
-                            className="w-full px-4 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 text-sm sm:text-base"
                             {...register("fullname", { required: "Full name is required" })}
                         />
                         {errors.fullname && (
-                            <p className="text-red-600 text-sm">{errors.fullname.message}</p>
+                            <p className="text-red-600 text-xs sm:text-sm">{errors.fullname.message}</p>
                         )}
                     </div>
 
@@ -129,7 +129,7 @@ const SignUp = () => {
                         <input
                             type="email"
                             placeholder="Enter your email"
-                            className="w-full px-4 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 text-sm sm:text-base"
                             {...register("email", {
                                 required: "Email is required",
                                 pattern: {
@@ -139,7 +139,7 @@ const SignUp = () => {
                             })}
                         />
                         {errors.email && (
-                            <p className="text-red-600 text-sm">{errors.email.message}</p>
+                            <p className="text-red-600 text-xs sm:text-sm">{errors.email.message}</p>
                         )}
                     </div>
 
@@ -149,7 +149,7 @@ const SignUp = () => {
                         <input
                             type="password"
                             placeholder="Create a password"
-                            className="w-full px-4 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 text-sm sm:text-base"
                             {...register("password", {
                                 required: "Password is required",
                                 minLength: {
@@ -159,7 +159,7 @@ const SignUp = () => {
                             })}
                         />
                         {errors.password && (
-                            <p className="text-red-600 text-sm">{errors.password.message}</p>
+                            <p className="text-red-600 text-xs sm:text-sm">{errors.password.message}</p>
                         )}
                     </div>
 
@@ -168,62 +168,56 @@ const SignUp = () => {
                         <label className="text-gray-700 text-sm font-medium">Confirm Password</label>
                         <input
                             type="password"
-                            placeholder="Re-enter password"
-                            className="w-full px-4 py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800"
+                            placeholder="Confirm your password"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 text-sm sm:text-base"
                             {...register("confirmPassword", {
-                                required: "Confirm your password",
-                                validate: (value) =>
-                                    value === password || "Passwords do not match",
+                                validate: (value) => value === watch("password") || "Passwords do not match",
                             })}
                         />
                         {errors.confirmPassword && (
-                            <p className="text-red-600 text-sm">{errors.confirmPassword.message}</p>
+                            <p className="text-red-600 text-xs sm:text-sm">{errors.confirmPassword.message}</p>
                         )}
                     </div>
 
-                    {/* Button */}
+                    {/* Submit Button */}
                     <button
                         type="submit"
-                        className="w-full py-3 bg-gray-800 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm"
+                        className="w-full py-2 sm:py-3 bg-gray-800 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm text-sm sm:text-base"
                     >
-                        Create Account
+                        Sign Up
                     </button>
-
-
-
-
                 </form>
-                <p className="text-center text-gray-700 text-sm mt-2">OR</p>
+                <p className="text-center text-gray-700 text-xs sm:text-sm mt-2">OR</p>
                 <div>
 
                     <button
                         onClick={handleGoogle}
-                        className="flex mt-2 items-center justify-center w-full px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 bg-white hover:bg-gray-100">
-                        <FcGoogle className="mr-2" />
+                        className="flex mt-2 items-center justify-center w-full px-3 sm:px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 bg-white hover:bg-gray-100 text-sm sm:text-base"
+                    >
+                        <FcGoogle className="mr-2 text-lg sm:text-xl" />
                         Continue with Google
                     </button>
                 </div>
 
-                {/* Already Have Account? */}
-                <p className="text-center text-gray-700 text-sm mt-6">
+                {/* Login Account */}
+                <p className="text-center text-gray-700 text-xs sm:text-sm mt-4 sm:mt-6">
                     Already have an account?{" "}
                     <Link to="/login" className="font-medium underline hover:text-gray-900">
-                        Log In
+                        Login
                     </Link>
                 </p>
 
                 <Link
                     to="/auth"
-                    className="mt-8 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-800 transition-colors text-sm"
+                    className="mt-6 sm:mt-8 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-800 transition-colors text-xs sm:text-sm"
                 >
-                    <IoIosReturnLeft className="text-lg" />
+                    <IoIosReturnLeft className="text-base sm:text-lg" />
                     Back to Auth
                 </Link>
 
             </div>
-
-
             <ToastContainer />
+
         </div>
     );
 };
