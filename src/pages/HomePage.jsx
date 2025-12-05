@@ -1,215 +1,185 @@
-// HomePage.jsx — Display all blogs
-import { onAuthStateChanged } from 'firebase/auth';
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { getAllBlogs, getUserByID } from '../utils/db';
-import { auth } from '../utils/firebase';
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getAllBlogs, getUserByID } from "../utils/db";
+import { auth } from "../utils/firebase";
+
+// --- Helper: Format Date ---
+const formatDate = (timestamp) => {
+  if (!timestamp) return "Unknown Date";
+  return new Date(timestamp).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+// --- Helper: Skeleton Loader Component ---
+const BlogSkeleton = () => (
+  <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-48 bg-gray-200 rounded-xl mb-4"></div>
+    <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+    <div className="h-4 bg-gray-200 rounded w-2/3 mb-6"></div>
+    <div className="flex items-center gap-3">
+      <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+      <div className="flex flex-col gap-1 w-24">
+        <div className="h-3 bg-gray-200 rounded"></div>
+        <div className="h-3 bg-gray-200 rounded w-16"></div>
+      </div>
+    </div>
+  </div>
+);
 
 const HomePage = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null);
 
-  // Function to fetch author details for a blog
-  const fetchAuthorDetails = useCallback(async (blog) => {
-    try {
-      if (blog.userId) {
-        const userData = await getUserByID(blog.userId);
-        if (userData && (userData.displayName || userData.name)) {
-          return userData.displayName || userData.name;
-        }
-      }
-      return blog.authorName || blog.userName || 'User';
-    } catch (error) {
-      console.error(`Error fetching author for blog ${blog.id}:`, error);
-      return blog.authorName || blog.userName || 'User';
-    }
+  // Check Login State
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
   }, []);
 
-  // Fetch all blogs with author details
+  // Fetch Blogs
   useEffect(() => {
-    const fetchBlogs = async () => {
+    const fetch = async () => {
       try {
-        setLoading(true);
-        const allBlogs = await getAllBlogs();
-        
-        // Fetch author details for each blog
-        const blogsWithAuthors = await Promise.all(
-          allBlogs.map(async (blog) => {
-            const authorName = await fetchAuthorDetails(blog);
-            return { ...blog, displayAuthorName: authorName };
+        const all = await getAllBlogs();
+        const withAuthors = await Promise.all(
+          all.map(async (b) => {
+            const u = await getUserByID(b.userId);
+            return { ...b, authorName: u?.name || b.userName || "Anonymous" };
           })
         );
-        
-        // Sort blogs by creation date (newest first)
-        const sortedBlogs = blogsWithAuthors.sort((a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        
-        setBlogs(sortedBlogs);
+        setBlogs(withAuthors);
       } catch (error) {
-        console.error('Error fetching blogs:', error);
-        toast.error('Failed to load blogs');
+        console.error("Error fetching blogs:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchBlogs();
-  }, [fetchAuthorDetails]);
-
-  // Set up auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-
-    return () => unsubscribe();
+    fetch();
   }, []);
 
-  // Format date to a readable format
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  // Truncate text to a certain length
-  const truncateText = (text, maxLength = 150) => {
-    if (!text) return '';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-lg text-gray-600">Loading blogs...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            Latest Blog Posts
+    <div className="min-h-screen  font-[Inter] pb-20">
+      {/* --- Hero Section --- */}
+      <div className="bg-white border-b border-gray-200 pt-16 pb-12 px-6 text-center mb-12">
+        <div className="max-w-3xl mx-auto">
+          <span className="inline-block py-1 px-3 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold tracking-wide uppercase mb-4">
+            Our Community
+          </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            Discover <span className="text-transparent bg-clip-text  from-indigo-600 to-purple-600">Stories & Ideas</span>
           </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Discover amazing stories, thinking, and expertise from our community
+          <p className="text-lg text-gray-500 mb-8 max-w-xl mx-auto leading-relaxed">
+            Read insightful articles, share your knowledge, and connect with a community of developers and writers.
           </p>
-          {currentUser ? (
-            <div className="mt-6">
-              <Link
-                to="/create-blog"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Write a Blog Post
-              </Link>
-            </div>
+
+          {/* CTA Button */}
+          {user ? (
+            <Link
+              to="/create-blog"
+              className="group relative inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition-all duration-200 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5"
+            >
+              <span>Write a Blog</span>
+              <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
           ) : (
-            <div className="mt-6">
-              <Link
-                to="/login"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Sign in to Create a Blog
+            <div className="inline-flex items-center bg-gray-100 rounded-full px-5 py-2 text-sm text-gray-600">
+              <span>Join the conversation?</span>
+              <Link to="/login" className="ml-2 font-bold text-indigo-600 hover:underline">
+                Login here
               </Link>
             </div>
           )}
         </div>
+      </div>
 
-        {blogs.length === 0 ? (
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h3 className="mt-2 text-lg font-medium text-gray-900">No blogs yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {currentUser ? (
-                <>
-                  Get started by{' '}
-                  <Link to="/create-blog" className="text-blue-600 hover:text-blue-500">
-                    creating a new blog post
-                  </Link>
-                  .
-                </>
-              ) : (
-                'Sign in to create your first blog post.'
-              )}
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {blogs.map((blog) => (
-              <article key={blog.id} className="flex flex-col overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-                {blog.image && (
-                  <div className="shrink-0 h-48">
-                    <img
-                      className="h-full w-full object-cover"
-                      src={blog.image}
-                      alt={blog.title}
-                    />
-                  </div>
-                )}
-                <div className="flex-1 p-6 flex flex-col justify-between">
-                  <div className="flex-1">
-                    <Link
-                      to={`/blog/${blog.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block hover:opacity-90 transition-opacity"
-                    >
-                      <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                        {blog.title}
-                      </h3>
-                      <p className="mt-3 text-base text-gray-500 line-clamp-3">
-                        {truncateText(blog.content)}
-                      </p>
-                    </Link>
-                  </div>
-                  <div className="mt-6 flex items-center">
-                    <div className="shrink-0">
-                      <span className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                        {blog.displayAuthorName?.charAt(0).toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">
-                        {blog.displayAuthorName || 'User'}
-                      </p>
-                      <div className="flex space-x-1 text-sm text-gray-500">
-                        <time dateTime={blog.createdAt}>
-                          {formatDate(blog.createdAt)}
-                        </time>
-                        <span aria-hidden="true">&middot;</span>
-                        <span>{Math.ceil(blog.content?.length / 200) || 2} min read</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </article>
+      {/* --- Main Content Grid --- */}
+      <div className="max-w-7xl mx-auto px-6">
+
+        {/* Loading State */}
+        {loading && (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <BlogSkeleton key={i} />
             ))}
           </div>
         )}
+
+        {/* Empty State */}
+        {!loading && blogs.length === 0 && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+              <span className="text-2xl">📝</span>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">No blogs yet</h3>
+            <p className="text-gray-500 mt-1">Be the first to share your story!</p>
+          </div>
+        )}
+
+        {/* Blog Grid */}
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {blogs.map((b) => (
+            <Link
+              key={b.id}
+              to={`/blog/${b.id}`}
+              className="group flex flex-col bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              {/* Image Container */}
+              <div className="relative h-56 overflow-hidden bg-gray-100">
+                {b.image ? (
+                  <img
+                    src={b.image}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    alt={b.title}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-indigo-200">
+                    <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>
+                  </div>
+                )}
+                {/* Overlay Date Badge */}
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-semibold text-gray-700 shadow-sm">
+                  {formatDate(b.createdAt).split(",")[0]}
+                </div>
+              </div>
+
+              {/* Card Content */}
+              <div className="flex-1 p-6 flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-indigo-600 transition-colors">
+                  {b.title}
+                </h2>
+
+                <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-6 flex-1">
+                  {b.content}
+                </p>
+
+                {/* Footer / Author */}
+                <div className="flex items-center gap-3 border-t border-gray-50 pt-4 mt-auto">
+                  {/* Avatar Placeholder */}
+                  <div className="h-10 w-10 rounded-full  from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    {b.authorName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {b.authorName}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Author
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

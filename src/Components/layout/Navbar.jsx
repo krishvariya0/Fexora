@@ -19,7 +19,7 @@ const Navbar = () => {
         if (user) {
             navigate("/profile");
         } else {
-            navigate("/login", { state: { from: "/profile" } });
+            navigate("/auth", { state: { from: "/profile" } });
         }
     };
 
