@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-// Added IoPerson, IoMail, IoCalendar for better visual details in the design
 import {
     IoCalendarOutline,
     IoCreateOutline,
@@ -20,7 +19,6 @@ const ProfilePage = () => {
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
             if (!currentUser) {
-                // If user is not logged in, redirect to login page
                 navigate("/Login", { state: { from: location.pathname } });
             } else {
                 setUser(currentUser);
@@ -28,134 +26,103 @@ const ProfilePage = () => {
         });
 
         return () => unsubscribe();
-    }, [navigate, location]);
+    }, []);
 
     const handleLogout = async () => {
         try {
             await logoutUser();
-            toast.success("Successfully logged out");
-            navigate('/');
-        } catch (error) {
-            toast.error("Failed to log out");
-            console.error("Logout error:", error);
+            toast.success("Logged Out Successfully");
+            navigate("/");
+        } catch {
+            toast.error("Logout Failed");
         }
     };
 
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-gray-500 font-medium">Loading profile...</p>
-                </div>
+            <div className="h-screen flex justify-center items-center bg-gray-100">
+                <div className="animate-spin border-4 border-gray-300 border-t-indigo-600 w-10 h-10 rounded-full"></div>
             </div>
         );
     }
 
-    // Get first letter of display name or email for avatar
-    const getInitial = () => {
-        if (user.displayName) {
-            return user.displayName.charAt(0).toUpperCase();
-        }
-        if (user.email) {
-            return user.email.charAt(0).toUpperCase();
-        }
-        return "U";
-    };
+    const initial = (user.displayName || user.email)[0].toUpperCase();
 
     return (
-        <div className="min-h-screen  flex justify-center items-center px-4 py-10">
-            {/* Main Card */}
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div className="min-h-screen flex justify-center  px-4 py-12">
+            <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
 
-                {/* Decorative Header / Cover */}
-                <div className="h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
-                    <div className="absolute inset-0 bg-black/10"></div>
+                {/* Header Banner */}
+                <div className="h-36 bg-gradient-to-r from-indigo-600 to-purple-600 relative">
+                    <div className="absolute inset-0 bg-black/10" />
                 </div>
 
-                {/* Content Container */}
-                <div className="px-8 pb-8 relative">
-
-                    {/* Avatar (Overlapping the header) */}
-                    <div className="relative -mt-16 mb-6 flex justify-center">
-                        <div className="h-32 w-32 rounded-full border-4 border-white bg-indigo-50 shadow-lg flex items-center justify-center text-5xl font-bold text-indigo-600">
-                            {getInitial()}
-                        </div>
+                {/* Avatar */}
+                <div className="-mt-7 flex justify-center">
+                    <div className="h-28 w-28 rounded-full bg-white shadow-lg border-4 border-white flex items-center justify-center text-4xl font-bold text-indigo-600">
+                        {initial}
                     </div>
+                </div>
 
-                    {/* Header Text */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                            {user.displayName || "User Profile"}
-                        </h1>
-                        <p className="text-sm text-gray-500 font-medium">Welcome back!</p>
-                    </div>
+                {/* User Name */}
+                <div className="text-center mt-4">
+                    <h1 className="text-2xl font-bold text-gray-900">{user.displayName || "User"}</h1>
+                    <p className="text-gray-500 text-sm mt-1">⭐ Verified Member</p>
+                </div>
 
-                    {/* User Details Section */}
-                    <div className="bg-gray-50 rounded-2xl p-5 space-y-4 mb-8 border border-gray-100">
-
-                        {/* Name Field */}
-                        {user.displayName && (
-                            <div className="flex items-center gap-3 text-gray-700">
-                                <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-500">
-                                    <IoPersonOutline size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Full Name</p>
-                                    <p className="font-semibold">{user.displayName}</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Email Field */}
-                        {user.email && (
-                            <div className="flex items-center gap-3 text-gray-700">
-                                <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-500">
-                                    <IoMailOutline size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Email Address</p>
-                                    <p className="font-semibold break-all">{user.email}</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Date Field */}
-                        <div className="flex items-center gap-3 text-gray-700">
-                            <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-500">
-                                <IoCalendarOutline size={20} />
-                            </div>
+                {/* Details Section */}
+                <div className="px-8 mt-6 space-y-5">
+                    {[
+                        {
+                            label: "Full Name",
+                            icon: <IoPersonOutline size={20} className="text-indigo-600" />,
+                            value: user.displayName || "Not Added"
+                        },
+                        {
+                            label: "Email Address",
+                            icon: <IoMailOutline size={20} className="text-indigo-600" />,
+                            value: user.email
+                        },
+                        {
+                            label: "Member Since",
+                            icon: <IoCalendarOutline size={20} className="text-indigo-600" />,
+                            value: new Date(user.metadata.creationTime).toLocaleDateString("en-IN", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            })
+                        }
+                    ].map((item, i) => (
+                        <div
+                            key={i}
+                            className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 transition shadow-sm"
+                        >
+                            <div className="p-3 bg-white rounded-xl shadow-sm">{item.icon}</div>
                             <div>
-                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Joined On</p>
-                                <p className="font-semibold">
-                                    {new Date(user.metadata.creationTime).toLocaleDateString(undefined, {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
+                                <p className="text-xs tracking-wider text-gray-400 uppercase">{item.label}</p>
+                                <p className="mt-1 text-gray-800 font-semibold break-all">{item.value}</p>
                             </div>
                         </div>
-                    </div>
+                    ))}
+                </div>
 
-                    {/* Action Buttons */}
-                    <div className="space-y-3">
-                        <button
-                            onClick={() => navigate("/edit-profile")}
-                            className="w-full group flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                        >
-                            <IoCreateOutline size={20} className="group-hover:scale-110 transition-transform" />
-                            Edit Profile
-                        </button>
+                {/* Buttons */}
+                <div className="px-8 py-10 space-y-4">
+                    <button
+                        onClick={() => navigate("/edit-profile")}
+                        className="w-full py-3 text-white rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-md hover:opacity-90 transition flex items-center justify-center gap-2 font-medium"
+                    >
+                        <IoCreateOutline size={18} />
+                        Edit Profile
+                    </button>
 
-                        <button
-                            onClick={handleLogout}
-                            className="w-full group flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 font-semibold py-3.5 rounded-xl transition-all duration-300"
-                        >
-                            <IoLogOutOutline size={20} className="group-hover:scale-110 transition-transform" />
-                            Log Out
-                        </button>
-                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full py-3 text-red-600 font-medium border border-red-200 rounded-xl hover:bg-red-50 transition flex items-center justify-center gap-2"
+                    >
+                        <IoLogOutOutline size={18} />
+                        Log Out
+                    </button>
                 </div>
             </div>
         </div>
@@ -163,3 +130,4 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+

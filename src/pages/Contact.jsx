@@ -19,107 +19,110 @@ const Contact = () => {
         const data = await response.json();
 
         if (data.success) {
-            setResult("Message Sent Successfully! 🎉");
+            setResult("🎉 Message Sent Successfully!");
             event.target.reset();
         } else {
-            setResult("Something went wrong ❌");
+            setResult("❌ Something went wrong, try again!");
         }
     };
 
     return (
-        <div className="min-h-screen  from-white to-gray-100 py-16 px-6">
+        <div className="min-h-screen py-14 px-4 md:px-10 lg:px-20  flex justify-center">
+            <div className="max-w-6xl w-full">
 
-            {/* PAGE HEADER */}
-            <div className="text-center mb-12">
-                <h1 className="text-5xl font-extrabold text-gray-900">Contact Us 📩</h1>
-                <p className="text-gray-600 text-lg mt-2 max-w-xl mx-auto">
-                    We'd love to hear from you. Fill out the form below!
-                </p>
-            </div>
-
-            {/* GRID LAYOUT */}
-            <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10">
-
-                {/* CONTACT DETAILS */}
-                <div className="bg-white shadow-lg rounded-2xl p-8 border border-gray-100">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Get in Touch</h2>
-
-                    <div className="space-y-6">
-                        <div className="flex gap-4 items-center">
-                            <div className="p-4 rounded-xl bg-indigo-100 text-indigo-600">
-                                <FiPhone size={24} />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-800">Phone</p>
-                                <p className="text-gray-500 text-sm">+91 0000000000</p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 items-center">
-                            <div className="p-4 rounded-xl bg-indigo-100 text-indigo-600">
-                                <FiMail size={24} />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-800">Email</p>
-                                <p className="text-gray-500 text-sm">variyakrish0@gmail.com</p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 items-center">
-                            <div className="p-4 rounded-xl bg-indigo-100 text-indigo-600">
-                                <FiMapPin size={24} />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-800">Address</p>
-                                <p className="text-gray-500 text-sm">Surat, Gujarat, India</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mt-10 h-56 rounded-xl bg-gray-200 flex items-center justify-center">
-                        🗺 Map Preview
-                    </div>
+                {/* HEADER */}
+                <div className="text-center mb-12">
+                    <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900">
+                        Contact Us 📩
+                    </h1>
+                    <p className="text-gray-600 text-md md:text-lg mt-3 max-w-xl mx-auto">
+                        We'd love to hear from you. Fill out the form below!
+                    </p>
                 </div>
 
-                {/* CONTACT FORM */}
-                <div className="bg-white shadow-lg rounded-2xl p-8 border border-gray-100">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Send a Message</h2>
+                {/* GRID */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-                    <form onSubmit={onSubmit} className="space-y-5">
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="Your Name"
-                            required
-                            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                        />
+                    {/* CONTACT INFO */}
+                    <div className="bg-white shadow-lg rounded-2xl p-6 md:p-8 border border-gray-100">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">📞 Get in Touch</h2>
 
-                        <input
-                            type="email"
-                            name="email"
-                            required
-                            placeholder="Your Email"
-                            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                        />
+                        <div className="space-y-6">
+                            <div className="flex gap-4 items-center">
+                                <div className="p-4 rounded-xl bg-indigo-100 text-indigo-600">
+                                    <FiPhone size={22} />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800">Phone</p>
+                                    <p className="text-gray-500 text-sm">+91 0000000000</p>
+                                </div>
+                            </div>
 
-                        <textarea
-                            name="message"
-                            required
-                            placeholder="Message..."
-                            className="w-full px-4 py-3 h-40 border rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
-                        ></textarea>
+                            <div className="flex gap-4 items-center">
+                                <div className="p-4 rounded-xl bg-indigo-100 text-indigo-600">
+                                    <FiMail size={22} />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800">Email</p>
+                                    <p className="text-gray-500 text-sm break-all">variyakrish0@gmail.com</p>
+                                </div>
+                            </div>
 
-                        <button
-                            type="submit"
-                            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-white text-lg  from-indigo-600 to-purple-600 hover:scale-[1.02] transition shadow-lg"
-                        >
-                            <FiSend /> Send Message
-                        </button>
-                    </form>
+                            <div className="flex gap-4 items-center">
+                                <div className="p-4 rounded-xl bg-indigo-100 text-indigo-600">
+                                    <FiMapPin size={22} />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800">Address</p>
+                                    <p className="text-gray-500 text-sm">Surat, Gujarat, India</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                    {result && (
-                        <p className="text-center text-indigo-600 font-medium mt-4">{result}</p>
-                    )}
+                    {/* CONTACT FORM */}
+                    <div className="bg-white shadow-lg rounded-2xl p-6 md:p-8 border border-gray-100">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">📝 Send a Message</h2>
+
+                        <form onSubmit={onSubmit} className="space-y-5">
+
+                            <input
+                                type="text"
+                                name="name"
+                                required
+                                placeholder="Your Name"
+                                className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            />
+
+                            <input
+                                type="email"
+                                name="email"
+                                required
+                                placeholder="Your Email"
+                                className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            />
+
+                            <textarea
+                                name="message"
+                                required
+                                placeholder="Your Message..."
+                                className="w-full px-4 py-3 h-36 border rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            ></textarea>
+
+                            <button
+                                type="submit"
+                                className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-white text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[1.03] active:scale-95 transition-transform shadow-lg"
+                            >
+                                <FiSend size={20} /> Send Message
+                            </button>
+                        </form>
+
+                        {result && (
+                            <p className={`text-center font-medium mt-4 ${result.includes("Successfully") ? "text-green-600" : "text-red-600"}`}>
+                                {result}
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

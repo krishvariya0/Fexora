@@ -72,7 +72,7 @@ const HomePage = () => {
             Our Community
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-            Discover <span className="text-transparent bg-clip-text  from-indigo-600 to-purple-600">Stories & Ideas</span>
+            <span className="text-black bg-clip-text  from-indigo-600 to-purple-600">Discover Stories & Ideas</span>
           </h1>
           <p className="text-lg text-gray-500 mb-8 max-w-xl mx-auto leading-relaxed">
             Read insightful articles, share your knowledge, and connect with a community of developers and writers.
@@ -164,7 +164,7 @@ const HomePage = () => {
                 {/* Footer / Author */}
                 <div className="flex items-center gap-3 border-t border-gray-50 pt-4 mt-auto">
                   {/* Avatar Placeholder */}
-                  <div className="h-10 w-10 rounded-full  from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-r  from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
                     {b.authorName.charAt(0).toUpperCase()}
                   </div>
                   <div>

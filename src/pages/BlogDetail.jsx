@@ -135,7 +135,7 @@ const BlogDetail = () => {
                     {/* ✍ Author + Date */}
                     <div className="flex items-center mt-6 mb-8 pb-8 border-b border-gray-100">
                         <div className="flex items-center">
-                            <div className="w-12 h-12  from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            <div className="w-12 h-12 bg-gradient-to-r  from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                 {blog.authorName?.charAt(0)?.toUpperCase() || "A"}
                             </div>
 
