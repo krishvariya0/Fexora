@@ -1,84 +1,36 @@
 import {
-    addDoc, collection, deleteDoc, doc, getDoc, getDocs,
-    onSnapshot, orderBy, query, setDoc, updateDoc
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    onSnapshot,
+    orderBy,
+    query,
+    setDoc,
+    updateDoc,
+    where
 } from "firebase/firestore";
 import { db } from "./firebase";
 
-// Save user to Firestore
+/* ----------------------- USER SYSTEM ----------------------- */
+
+// Create or Update User
 export const createUser = async (user) => {
     const ref = doc(db, "users", user.uid);
     return setDoc(ref, user, { merge: true });
 };
 
+// Get user by UID
 export const getUserByID = async (uid) => {
-    const userRef = doc(db, "users", uid);
-    const snap = await getDoc(userRef);
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
     return snap.exists() ? snap.data() : null;
 };
 
-// Create blog under user
-export const createUserBlog = async (userId, blogData) => {
-    const ref = collection(db, `users/${userId}/blogs`);
-    blogData.createdAt = Date.now();
-    blogData.updatedAt = Date.now();
-    return addDoc(ref, blogData);
-};
-
-// Update blog
-export const updateUserBlog = async (userId, blogId, blogData) => {
-    const ref = doc(db, `users/${userId}/blogs`, blogId);
-    blogData.updatedAt = Date.now();
-    return updateDoc(ref, blogData);
-};
-
-// Delete blog
-export const deleteUserBlog = async (userId, blogId) => {
-    const ref = doc(db, `users/${userId}/blogs`, blogId);
-    return deleteDoc(ref);
-};
-
-// Get user blogs live sync
-export const getUserBlogs = (userId, callback) => {
-    const ref = collection(db, `users/${userId}/blogs`);
-    const q = query(ref, orderBy("createdAt", "desc"));
-
-    return onSnapshot(q, (snapshot) => {
-        callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
-};
-
-// Get all blogs from all users
-export const getAllBlogs = async () => {
-    const users = await getDocs(collection(db, "users"));
-    const result = [];
-
-    for (const user of users.docs) {
-        const ref = await getDocs(collection(db, `users/${user.id}/blogs`));
-
-        ref.forEach((blog) => {
-            result.push({ id: blog.id, userId: user.id, ...blog.data() });
-        });
-    }
-
-    return result.sort((a, b) => b.createdAt - a.createdAt);
-};
-
-// Fetch single blog by ID from any user
-export const getBlogById = async (blogId) => {
-    const users = await getDocs(collection(db, "users"));
-
-    for (const user of users.docs) {
-        const ref = doc(db, `users/${user.id}/blogs`, blogId);
-        const snap = await getDoc(ref);
-
-        if (snap.exists()) {
-            return { id: blogId, userId: user.id, ...snap.data() };
-        }
-    }
-
-    return null;
-};
-
+// Get user by Email
 export const getUserByEmail = async (email) => {
     const q = query(
         collection(db, "users"),
@@ -87,9 +39,82 @@ export const getUserByEmail = async (email) => {
     );
 
     const snap = await getDocs(q);
+    return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+};
 
-    if (snap.empty) return null;
 
-    const docSnap = snap.docs[0];
-    return { id: docSnap.id, ...docSnap.data() };
+/* ----------------------- BLOG SYSTEM ----------------------- */
+
+// Create blog → saves in user + global blogs collection
+export const createUserBlog = async (userId, blogData) => {
+    const userBlogsRef = collection(db, `users/${userId}/blogs`);
+    const globalRef = collection(db, "blogs");
+
+    blogData.createdAt = Date.now();
+    blogData.updatedAt = Date.now();
+    blogData.userId = userId;
+
+    // Save in user collection
+    const newBlog = await addDoc(userBlogsRef, blogData);
+
+    // Mirror in global blogs
+    await setDoc(doc(globalRef, newBlog.id), blogData);
+
+    return newBlog;
+};
+
+// Update blog in both locations
+export const updateUserBlog = async (userId, blogId, blogData) => {
+    blogData.updatedAt = Date.now();
+
+    await updateDoc(doc(db, `users/${userId}/blogs`, blogId), blogData);
+    await updateDoc(doc(db, "blogs", blogId), blogData);
+
+    return true;
+};
+
+// Delete blog from both collections
+export const deleteUserBlog = async (userId, blogId) => {
+    await deleteDoc(doc(db, `users/${userId}/blogs`, blogId));
+    await deleteDoc(doc(db, "blogs", blogId));
+};
+
+
+/* ----------------------- FETCH BLOGS ----------------------- */
+
+// Live: Get all blogs for one user
+export const getUserBlogs = (userId, callback) => {
+    const q = query(
+        collection(db, `users/${userId}/blogs`),
+        orderBy("createdAt", "desc")
+    );
+
+    return onSnapshot(q, (snap) =>
+        callback(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+    );
+};
+
+// Get all blogs once (no realtime)
+export const getAllBlogs = async () => {
+    const snap = await getDocs(collection(db, "blogs"));
+    return snap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => b.createdAt - a.createdAt);
+};
+
+// Live: Get all blogs from everyone
+export const getAllBlogsRealtime = (callback) => {
+    const q = query(collection(db, "blogs"), orderBy("createdAt", "desc"));
+
+    return onSnapshot(q, (snap) =>
+        callback(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+    );
+};
+
+// Fetch single blog by id (works globally)
+export const getBlogById = async (blogId) => {
+    const ref = doc(db, "blogs", blogId);
+    const snap = await getDoc(ref);
+
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 };

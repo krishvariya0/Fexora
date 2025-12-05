@@ -1,7 +1,7 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllBlogs, getUserByID } from "../utils/db";
+import { getAllBlogsRealtime, getUserByID } from "../utils/db";
 import { auth } from "../utils/firebase";
 
 // --- Helper: Format Date ---
@@ -43,25 +43,24 @@ const HomePage = () => {
   }, []);
 
   // Fetch Blogs
+  // Fetch ALL blogs live from all users
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const all = await getAllBlogs();
-        const withAuthors = await Promise.all(
-          all.map(async (b) => {
-            const u = await getUserByID(b.userId);
-            return { ...b, authorName: u?.name || b.userName || "Anonymous" };
-          })
-        );
-        setBlogs(withAuthors);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+    const unsubscribe = getAllBlogsRealtime(async (allBlogs) => {
+
+      const withAuthors = await Promise.all(
+        allBlogs.map(async (b) => {
+          const u = await getUserByID(b.userId);
+          return { ...b, authorName: u?.name || b.userName || "Anonymous" };
+        })
+      );
+
+      setBlogs(withAuthors);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
+
 
   return (
     <div className="min-h-screen  font-[Inter] pb-20">
