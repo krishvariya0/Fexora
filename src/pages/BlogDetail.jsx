@@ -167,10 +167,7 @@ const BlogDetail = () => {
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="mt-12 py-8 border-t border-gray-100 text-center text-gray-500 text-sm">
-                © {new Date().getFullYear()} Blog Platform. All rights reserved.
-            </footer>
+
         </div>
     );
 };
