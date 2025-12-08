@@ -167,7 +167,6 @@ const BlogDetail = () => {
                 </div>
             </main>
 
-
         </div>
     );
 };

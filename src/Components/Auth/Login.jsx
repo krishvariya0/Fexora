@@ -2,14 +2,14 @@ import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
 import { IoIosReturnLeft } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { signInWithEmail, signUpWithGoogle } from "../../utils/auth";
 import { createUser, getUserByID } from "../../utils/db";
 
 const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Get the redirect path from location state or default to '/'
     const from = location.state?.from?.pathname || "/";
 
@@ -146,7 +146,7 @@ const Login = () => {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className="w-full py-2 sm:py-3 bg-gray-800 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm text-sm sm:text-base"
+                        className="w-full py-2 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-md transition shadow-sm text-sm sm:text-base"
                     >
                         Login
                     </button>
@@ -180,8 +180,6 @@ const Login = () => {
                 </Link>
 
             </div>
-            <ToastContainer />
-
         </div>
     );
 };

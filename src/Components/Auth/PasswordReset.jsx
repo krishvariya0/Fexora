@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { resetPassword } from "../../utils/auth";
 
 const PasswordReset = () => {
@@ -94,8 +94,6 @@ const PasswordReset = () => {
           </button>
         </form>
       </div>
-
-      <ToastContainer />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
 import { IoIosReturnLeft } from "react-icons/io";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { signUpWithEmailAndPassword, signUpWithGoogle } from "../../utils/auth";
 import { createUser, getUserByID } from "../../utils/db";
@@ -182,7 +182,7 @@ const SignUp = () => {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className="w-full py-2 sm:py-3 bg-gray-800 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm text-sm sm:text-base"
+                        className="w-full py-2 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm text-sm sm:text-base"
                     >
                         Sign Up
                     </button>
@@ -216,8 +216,6 @@ const SignUp = () => {
                 </Link>
 
             </div>
-            <ToastContainer />
-
         </div>
     );
 };

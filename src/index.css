@@ -15,3 +15,30 @@
   -moz-osx-font-smoothing: grayscale;
 } */
 
+/* Default toast style text */
+.toast-body {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 🔥 Mobile Optimization */
+@media (max-width: 480px) {
+  .Toastify__toast {
+    width: 90% !important;
+    margin: 0 auto !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .Toastify__close-button {
+    scale: 0.8; /* Smaller close button */
+  }
+
+  .toast-body {
+    font-size: 14px !important;
+  }
+}
+
+

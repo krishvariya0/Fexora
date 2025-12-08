@@ -5,7 +5,7 @@ import { FiSave, FiSend } from "react-icons/fi";
 import { HiOutlinePhoto } from "react-icons/hi2";
 import { MdDelete } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { createUserBlog, deleteUserBlog, getUserBlogs, updateUserBlog } from "../utils/db";
 import { auth } from "../utils/firebase";
 
@@ -16,7 +16,13 @@ const CreateBlog = () => {
     const [image, setImage] = useState("");
     const fileRef = useRef(null);
 
-    const { register, handleSubmit, reset, setValue } = useForm();
+    const {
+        register,
+        handleSubmit,
+        reset,
+        setValue,
+        formState: { errors }
+    } = useForm();
 
     useEffect(() => {
         if (!auth.currentUser) return;
@@ -82,20 +88,34 @@ const CreateBlog = () => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Blog Title</label>
                             <input
-                                {...register("title")}
+                                {...register("title"
+                                    , {
+                                        required: { value: true, message: "Blog title is required" },
+                                        minLength: { value: 5, message: "minimum 5 characters required" },
+                                        maxLength: { value: 100, message: "maximum 100 characters allowed" }
+                                    }
+                                )}
                                 className="mt-2 w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Enter blog title..."
                             />
+                            {errors.title && <p className="text-red-500 text-sm mt-2">{errors.title.message}</p>}
                         </div>
 
                         {/* Content */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Blog Content</label>
                             <textarea
-                                {...register("content")}
+                                {...register("content",
+                                    {
+                                        required: { value: true, message: "Blog content is required" },
+                                        minLength: { value: 1000, message: "minimum 1000 characters required" },
+                                        maxLength: { value: 5000, message: "maximum 5000 characters allowed" }
+                                    })
+                                }
                                 className="mt-2 w-full px-4 py-3 h-40 border rounded-xl resize-none focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Write your blog..."
                             />
+                            {errors.content && <p className="text-red-500 text-sm mt-2">{errors.content.message}</p>}
                         </div>
 
                         {/* Upload */}
@@ -111,6 +131,7 @@ const CreateBlog = () => {
                                 <span className="text-xs text-gray-400">JPG, PNG — Max 5MB</span>
 
                                 <input
+                                    {...register("image")}
                                     id="upload"
                                     ref={fileRef}
                                     type="file"
@@ -123,6 +144,8 @@ const CreateBlog = () => {
                                     className="hidden"
                                 />
                             </label>
+
+                            {errors.image && <p className="text-red-500 text-sm mt-2">{errors.image.message}</p>}
                         </div>
 
                         {image && (
@@ -190,7 +213,6 @@ const CreateBlog = () => {
                 )}
 
             </div>
-            <ToastContainer />
         </div>
     );
 };

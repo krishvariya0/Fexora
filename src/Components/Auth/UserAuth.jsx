@@ -10,7 +10,7 @@ function AuthModel() {
             <div className="w-full max-w-lg bg-white border border-gray-300 rounded-xl shadow-md p-8">
 
                 {/* TITLE */}
-                <h1 className="text-2xl font-bold text-gray-800 text-center">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hover:from-indigo-500 hover:to-purple-500 text-center">
                     Welcome to Fexora
                 </h1>
 
@@ -22,7 +22,7 @@ function AuthModel() {
 
                     <Link
                         to="/login"
-                        className="w-full bg-gray-800 hover:bg-gray-600 text-white font-semibold py-3 rounded-md shadow-sm transition inline-block"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-md shadow-sm transition inline-block"
                     >
                         Continue to Sign In
                     </Link>
@@ -42,7 +42,7 @@ function AuthModel() {
                     </p>
                     <Link
                         to="/SignUp"
-                        className="w-full bg-gray-800 hover:bg-gray-600 text-white font-semibold py-3 rounded-md shadow-sm transition inline-block"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-md shadow-sm transition inline-block"
                     >
                         Create Account
                     </Link>
