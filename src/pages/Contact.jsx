@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiMail, FiMapPin, FiPhone, FiSend } from "react-icons/fi";
+import Button from "../Components/layout/button.jsx";
 
 const Contact = () => {
     const [result, setResult] = useState("");
@@ -109,12 +110,9 @@ const Contact = () => {
                                 className="w-full px-4 py-3 h-36 border rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 outline-none transition"
                             ></textarea>
 
-                            <button
-                                type="submit"
-                                className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-white text-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[1.03] active:scale-95 transition-transform shadow-lg"
-                            >
-                                <FiSend size={20} /> Send Message
-                            </button>
+                            <Button type="submit" className="text-lg hover:scale-[1.03] active:scale-95 transition-transform shadow-lg">
+                                <FiSend /> Send Message
+                            </Button>
                         </form>
 
                         {result && (
