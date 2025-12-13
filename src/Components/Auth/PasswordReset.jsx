@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { resetPassword } from "../../utils/auth";
+import Button from "../layout/button.jsx";
 
 const PasswordReset = () => {
   const navigate = useNavigate();
@@ -86,12 +87,9 @@ const PasswordReset = () => {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full py-3 bg-gray-800 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm"
-          >
+          <Button type="submit" variant="secondary">
             Reset Password
-          </button>
+          </Button>
         </form>
       </div>
     </div>

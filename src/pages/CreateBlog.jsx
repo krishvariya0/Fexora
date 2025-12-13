@@ -6,6 +6,7 @@ import { HiOutlinePhoto } from "react-icons/hi2";
 import { MdDelete } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import Button from "../Components/layout/button.jsx";
 import { createUserBlog, deleteUserBlog, getUserBlogs, updateUserBlog } from "../utils/db";
 import { auth } from "../utils/firebase";
 
@@ -152,10 +153,9 @@ const CreateBlog = () => {
                             <img src={image} className="w-full rounded-xl h-56 object-cover border shadow-md" />
                         )}
 
-                        <button className="w-full py-3 rounded-xl text-white flex justify-center items-center gap-2 
-                            bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 transition shadow-xl">
+                        <Button type="submit">
                             {editing ? <><FiSave /> Update Blog</> : <><FiSend /> Publish Blog</>}
-                        </button>
+                        </Button>
                     </form>
                 </div>
 
@@ -190,21 +190,17 @@ const CreateBlog = () => {
                                     </Link>
 
                                     <div className="flex gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setEditing(b.id);
-                                                setValue("title", b.title);
-                                                setValue("content", b.content);
-                                                setImage(b.image);
-                                            }}
-                                            className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition">
+                                        <Button variant="icon" onClick={() => {
+                                            setEditing(b.id);
+                                            setValue("title", b.title);
+                                            setValue("content", b.content);
+                                            setImage(b.image);
+                                        }}>
                                             <FaEdit />
-                                        </button>
-                                        <button
-                                            onClick={() => removeBlog(b.id)}
-                                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition">
+                                        </Button>
+                                        <Button variant="danger" onClick={() => removeBlog(b.id)}>
                                             <MdDelete />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             </div>

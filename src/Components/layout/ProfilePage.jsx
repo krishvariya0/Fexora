@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { logoutUser } from "../../utils/auth";
 import { auth } from "../../utils/firebase";
+import Button from "./button.jsx";
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);
@@ -53,7 +54,7 @@ const ProfilePage = () => {
             <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
 
                 {/* Header Banner */}
-                <div className="h-36 bg-gradient-to-r from-indigo-600 to-purple-600 relative">
+                <div className="h-36 bg-linear-to-r from-indigo-600 to-purple-600 relative">
                     <div className="absolute inset-0 bg-black/10" />
                 </div>
 
@@ -108,21 +109,13 @@ const ProfilePage = () => {
 
                 {/* Buttons */}
                 <div className="px-8 py-10 space-y-4">
-                    <button
-                        onClick={() => navigate("/edit-profile")}
-                        className="w-full py-3 text-white rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-md hover:opacity-90 transition flex items-center justify-center gap-2 font-medium"
-                    >
-                        <IoCreateOutline size={18} />
-                        Edit Profile
-                    </button>
+                    <Button onClick={() => navigate("/edit-profile")}>
+                        <IoCreateOutline /> Edit Profile
+                    </Button>
 
-                    <button
-                        onClick={handleLogout}
-                        className="w-full py-3 text-red-600 font-medium border border-red-200 rounded-xl hover:bg-red-50 transition flex items-center justify-center gap-2"
-                    >
-                        <IoLogOutOutline size={18} />
-                        Log Out
-                    </button>
+                    <Button onClick={handleLogout} className="text-red-600 border border-red-200 hover:bg-red-50">
+                        <IoLogOutOutline /> Logout
+                    </Button>
                 </div>
             </div>
         </div>

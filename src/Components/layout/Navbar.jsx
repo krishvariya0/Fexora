@@ -4,6 +4,7 @@ import { CgProfile } from "react-icons/cg";
 import { HiMenu, HiX } from "react-icons/hi";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../utils/firebase";
+import Button from "./button.jsx";
 
 const Navbar = () => {
     const [user, setUser] = useState(null);
@@ -41,7 +42,7 @@ const Navbar = () => {
 
                 {/* Brand */}
                 <Link to="/" className="flex items-center gap-2 group">
-                    <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hover:from-indigo-500 hover:to-purple-500 transition-all duration-300">
+                    <span className="text-2xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hover:from-indigo-500 hover:to-purple-500 transition-all duration-300">
                         Fexora
                     </span>
                 </Link>
@@ -68,57 +69,38 @@ const Navbar = () => {
 
                     {/* Profile */}
                     <div className="pl-4 border-l border-gray-200">
-                        <button
-                            onClick={handleProfileClick}
-                            className="group relative flex items-center justify-center focus:outline-none"
-                            aria-label={user ? "View Profile" : "Sign In"}
-                        >
+                        <Button variant="icon" onClick={handleProfileClick} className="relative" aria-label={user ? "View Profile" : "Sign In"}>
                             {user ? (
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-md hover:shadow-lg transition-all duration-300">
-                                    <div className="h-full w-full rounded-full bg-white flex items-center justify-center text-sm font-bold text-indigo-700">
+                                <>
+                                    <span className="w-8 h-8 rounded-full bg-linear-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center text-sm font-medium">
                                         {getInitial()}
-                                    </div>
-                                </div>
+                                    </span>
+                                    <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
+                                </>
                             ) : (
-                                <div className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-indigo-600 transition-colors duration-200">
-                                    <CgProfile className="text-2xl" />
-                                </div>
+                                <CgProfile className="text-xl" />
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 {/* Mobile menu button */}
                 <div className="md:hidden flex items-center gap-4">
                     {/* Profile button for mobile */}
-                    <button
-                        onClick={handleProfileClick}
-                        aria-label={user ? "View Profile" : "Sign In"}
-                        className="focus:outline-none"
-                    >
+                    <Button variant="icon" onClick={handleProfileClick} className="relative" aria-label={user ? "View Profile" : "Sign In"}>
                         {user ? (
-                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-sm">
-                                <div className="h-full w-full rounded-full bg-white flex items-center justify-center text-xs font-bold text-indigo-700">
-                                    {getInitial()}
-                                </div>
-                            </div>
+                            <span className="w-8 h-8 rounded-full bg-linear-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center text-sm font-medium">
+                                {getInitial()}
+                            </span>
                         ) : (
-                            <CgProfile className="text-2xl text-gray-600" />
+                            <CgProfile className="text-xl" />
                         )}
-                    </button>
+                    </Button>
 
                     {/* Mobile menu toggle */}
-                    <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-indigo-600 focus:outline-none transition-colors"
-                        aria-label="Toggle menu"
-                    >
-                        {mobileMenuOpen ? (
-                            <HiX className="h-6 w-6" />
-                        ) : (
-                            <HiMenu className="h-6 w-6" />
-                        )}
-                    </button>
+                    <Button variant="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 hover:bg-gray-100 hover:text-indigo-600 rounded-lg">
+                        {mobileMenuOpen ? <HiX className="text-xl" /> : <HiMenu className="text-xl" />}
+                    </Button>
                 </div>
             </div>
 

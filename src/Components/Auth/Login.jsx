@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { signInWithEmail, signUpWithGoogle } from "../../utils/auth";
 import { createUser, getUserByID } from "../../utils/db";
+import Button from "../layout/button.jsx";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -144,23 +145,17 @@ const Login = () => {
                     </div>
 
                     {/* Submit Button */}
-                    <button
-                        type="submit"
-                        className="w-full py-2 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-md transition shadow-sm text-sm sm:text-base"
-                    >
+                    <Button type="submit">
                         Login
-                    </button>
+                    </Button>
                 </form>
                 <p className="text-center text-gray-700 text-xs sm:text-sm mt-2">OR</p>
                 <div>
 
-                    <button
-                        onClick={handaleGoogle}
-                        className="flex mt-2 items-center justify-center w-full px-3 sm:px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-800 bg-white hover:bg-gray-100 text-sm sm:text-base"
-                    >
-                        <FcGoogle className="mr-2 text-lg sm:text-xl" />
+                    <Button variant="google" onClick={handaleGoogle}>
+                        <FcGoogle className="text-lg sm:text-xl" />
                         Continue with Google
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Create Account */}

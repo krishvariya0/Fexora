@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { forgetPassword } from "../../utils/auth";
 import { getUserByEmail } from "../../utils/db";
+import Button from "../layout/button.jsx";
 
 const ForgetPassword = () => {
   const {
@@ -70,12 +71,9 @@ const ForgetPassword = () => {
           </div>
 
           {/* Submit button */}
-          <button
-            type="submit"
-            className="w-full py-3 bg-gray-800 hover:bg-gray-600 text-white font-semibold rounded-md transition shadow-sm"
-          >
+          <Button type="submit" variant="secondary">
             Send Reset Link
-          </button>
+          </Button>
         </form>
 
         {/* Back to Login */}
