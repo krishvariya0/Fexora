@@ -67,7 +67,7 @@ const CreateBlog = () => {
     };
 
     return (
-        <div className="min-h-screen px-4 py-10 md:px-10 bg-gradient-to-br from-white to-gray-100">
+        <div className="min-h-screen px-4 py-10 md:px-10 ">
             <div className="max-w-[1440px] mx-auto">
 
                 {/* Header */}
